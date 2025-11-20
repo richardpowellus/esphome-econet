@@ -27,16 +27,16 @@ void EconetClimate::dump_config() {
 climate::ClimateTraits EconetClimate::traits() {
   auto traits = climate::ClimateTraits();
   if (!current_temperature_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_FEATURE_CURRENT_TEMPERATURE);
+    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
   }
   if (!current_humidity_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_FEATURE_CURRENT_HUMIDITY);
+    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_HUMIDITY);
   }
   if (!target_dehumidification_level_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_FEATURE_TARGET_HUMIDITY);
+    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_TARGET_HUMIDITY);
   }
   if (!target_temperature_high_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_FEATURE_TWO_POINT_TARGET_TEMPERATURE);
+    traits.add_feature_flags(climate::CLIMATE_REQUIRES_TWO_POINT_TARGET_TEMPERATURE);
   }
   if (!mode_id_.empty()) {
     for (const auto &kv : modes_) {
@@ -141,7 +141,6 @@ void EconetClimate::setup() {
             ESP_LOGW(TAG, "In custom_presets of your yaml add: %d: \"%s\"", datapoint.value_enum,
                      datapoint.value_string.c_str());
           } else {
-            this->custom_preset = it->second;
             set_custom_preset_(it->second.c_str());
             publish_state();
           }
@@ -160,7 +159,6 @@ void EconetClimate::setup() {
             fan_mode_ = it->second;
             if (follow_schedule_.has_value()) {
               if (follow_schedule_.value()) {
-                this->custom_fan_mode = fan_mode_;
                 set_custom_fan_mode_(fan_mode_.c_str());
                 publish_state();
               }
@@ -181,7 +179,6 @@ void EconetClimate::setup() {
             fan_mode_no_schedule_ = it->second;
             if (follow_schedule_.has_value()) {
               if (!follow_schedule_.value()) {
-                this->custom_fan_mode = fan_mode_no_schedule_;
                 set_custom_fan_mode_(fan_mode_no_schedule_.c_str());
                 publish_state();
               }
@@ -199,13 +196,11 @@ void EconetClimate::setup() {
           follow_schedule_ = datapoint.value_enum > 0;
           if (follow_schedule_.value()) {
             if (!fan_mode_.empty()) {
-              this->custom_fan_mode = fan_mode_;
               set_custom_fan_mode_(fan_mode_.c_str());
               publish_state();
             }
           } else {
             if (!fan_mode_no_schedule_.empty()) {
-              this->custom_fan_mode = fan_mode_no_schedule_;
               set_custom_fan_mode_(fan_mode_no_schedule_.c_str());
               publish_state();
             }
