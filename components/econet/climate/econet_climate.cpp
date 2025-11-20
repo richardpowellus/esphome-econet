@@ -27,16 +27,16 @@ void EconetClimate::dump_config() {
 climate::ClimateTraits EconetClimate::traits() {
   auto traits = climate::ClimateTraits();
   if (!current_temperature_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
+    traits.add_feature_flags(climate::CLIMATE_FEATURE_CURRENT_TEMPERATURE);
   }
   if (!current_humidity_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_HUMIDITY);
+    traits.add_feature_flags(climate::CLIMATE_FEATURE_CURRENT_HUMIDITY);
   }
   if (!target_dehumidification_level_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_TARGET_HUMIDITY);
+    traits.add_feature_flags(climate::CLIMATE_FEATURE_TARGET_HUMIDITY);
   }
   if (!target_temperature_high_id_.empty()) {
-    traits.add_feature_flags(climate::CLIMATE_REQUIRES_TWO_POINT_TARGET_TEMPERATURE);
+    traits.add_feature_flags(climate::CLIMATE_FEATURE_TWO_POINT_TARGET_TEMPERATURE);
   }
   if (!mode_id_.empty()) {
     for (const auto &kv : modes_) {
@@ -237,7 +237,8 @@ void EconetClimate::control(const climate::ClimateCall &call) {
     }
   }
   if (call.get_custom_preset() != nullptr && !custom_preset_id_.empty()) {
-    const std::string preset = call.get_custom_preset();
+    const char* preset_cstr = call.get_custom_preset();
+    const std::string preset(preset_cstr);
     auto it = std::find_if(custom_presets_.begin(), custom_presets_.end(),
                            [&preset](const std::pair<uint8_t, std::string> &p) { return p.second == preset; });
     if (it != custom_presets_.end()) {
@@ -245,7 +246,8 @@ void EconetClimate::control(const climate::ClimateCall &call) {
     }
   }
   if (call.get_custom_fan_mode() != nullptr && !custom_fan_mode_id_.empty()) {
-    const std::string fan_mode = call.get_custom_fan_mode();
+    const char* fan_mode_cstr = call.get_custom_fan_mode();
+    const std::string fan_mode(fan_mode_cstr);
     auto it = std::find_if(custom_fan_modes_.begin(), custom_fan_modes_.end(),
                            [&fan_mode](const std::pair<uint8_t, std::string> &p) { return p.second == fan_mode; });
     if (it != custom_fan_modes_.end()) {
