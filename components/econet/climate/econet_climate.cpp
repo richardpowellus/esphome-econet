@@ -141,6 +141,7 @@ void EconetClimate::setup() {
             ESP_LOGW(TAG, "In custom_presets of your yaml add: %d: \"%s\"", datapoint.value_enum,
                      datapoint.value_string.c_str());
           } else {
+            this->custom_preset = it->second;
             set_custom_preset_(it->second.c_str());
             publish_state();
           }
@@ -159,6 +160,7 @@ void EconetClimate::setup() {
             fan_mode_ = it->second;
             if (follow_schedule_.has_value()) {
               if (follow_schedule_.value()) {
+                this->custom_fan_mode = fan_mode_;
                 set_custom_fan_mode_(fan_mode_.c_str());
                 publish_state();
               }
@@ -179,6 +181,7 @@ void EconetClimate::setup() {
             fan_mode_no_schedule_ = it->second;
             if (follow_schedule_.has_value()) {
               if (!follow_schedule_.value()) {
+                this->custom_fan_mode = fan_mode_no_schedule_;
                 set_custom_fan_mode_(fan_mode_no_schedule_.c_str());
                 publish_state();
               }
@@ -196,11 +199,13 @@ void EconetClimate::setup() {
           follow_schedule_ = datapoint.value_enum > 0;
           if (follow_schedule_.value()) {
             if (!fan_mode_.empty()) {
+              this->custom_fan_mode = fan_mode_;
               set_custom_fan_mode_(fan_mode_.c_str());
               publish_state();
             }
           } else {
             if (!fan_mode_no_schedule_.empty()) {
+              this->custom_fan_mode = fan_mode_no_schedule_;
               set_custom_fan_mode_(fan_mode_no_schedule_.c_str());
               publish_state();
             }
